@@ -1,6 +1,15 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.JFileChooser;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -12,6 +21,8 @@ import java.awt.event.ActionListener;
  * @author Rahmat
  */
 public class PenghitungKataFrame extends javax.swing.JFrame {
+
+    private String kata;
     
 
     /**
@@ -19,40 +30,23 @@ public class PenghitungKataFrame extends javax.swing.JFrame {
      */
     public PenghitungKataFrame() {
         initComponents();
-         setTitle("Aplikasi Penghitung Kata"); // Set judul jendela
-        setSize(400, 300); // Set ukuran jendela
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Tutup aplikasi saat jendela ditutup
+         // Menambahkan DocumentListener pada textArea
+        textArea.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateHasil(); // Update hasil saat teks ditambah
+            }
 
-        // Buat panel utama dan tambahkan ke frame
-        JPanel panel = new JPanel();
-        getContentPane().add(panel); // Tambahkan panel ke frame utama
-        panel.setLayout(null); // Set layout menjadi null untuk penempatan manual komponen
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateHasil(); // Update hasil saat teks dihapus
+            }
 
-        // JTextArea untuk input teks, dibungkus dalam JScrollPane
-        textArea = new JTextArea(); // Area teks untuk input pengguna
-        JScrollPane scrollPane = new JScrollPane(textArea); // JScrollPane agar bisa digulir
-        scrollPane.setBounds(20, 20, 350, 100); // Set posisi dan ukuran
-        panel.add(scrollPane); // Tambahkan scrollPane ke panel
-
-        // JLabel untuk menampilkan hasil perhitungan jumlah kata
-        labelKata = new JLabel("Jumlah Kata: 0");
-        labelKata.setBounds(20, 130, 150, 20); // Set posisi dan ukuran label
-        panel.add(labelKata); // Tambahkan ke panel
-
-        // JLabel untuk menampilkan hasil perhitungan jumlah karakter
-        labelKarakter = new JLabel("Jumlah Karakter: 0");
-        labelKarakter.setBounds(20, 160, 150, 20);
-        panel.add(labelKarakter);
-
-        // JLabel untuk menampilkan hasil perhitungan jumlah kalimat
-        labelKalimat = new JLabel("Jumlah Kalimat: 0");
-        labelKalimat.setBounds(20, 190, 150, 20);
-        panel.add(labelKalimat);
-
-        // JButton untuk memulai perhitungan
-        btnHitung = new JButton("Hitung"); // Buat tombol "Hitung"
-        btnHitung.setBounds(150, 230, 100, 30); // Set posisi dan ukuran tombol
-        panel.add(btnHitung);
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateHasil(); // Update hasil saat format teks berubah
+            }
+        });
     }
 
     /**
@@ -66,23 +60,27 @@ public class PenghitungKataFrame extends javax.swing.JFrame {
 
         jPanel1 = new javax.swing.JPanel();
         labelKata = new javax.swing.JLabel();
-        labelKarakter = new javax.swing.JLabel();
         labelKalimat = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        textArea = new javax.swing.JTextArea();
         btnHitung = new javax.swing.JButton();
+        labelKarakterTotalNonSpasi = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        labelParagraf = new javax.swing.JLabel();
+        textFieldCari = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        btnCari = new javax.swing.JButton();
+        btnSimpan = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         labelKata.setText("jumlah kata");
 
-        labelKarakter.setText("karakter");
+        labelKalimat.setText("Jumlah Kalimat ");
 
-        labelKalimat.setText("kalimat");
-
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        textArea.setColumns(20);
+        textArea.setRows(5);
+        jScrollPane1.setViewportView(textArea);
 
         btnHitung.setText("Hitung");
         btnHitung.addActionListener(new java.awt.event.ActionListener() {
@@ -91,36 +89,94 @@ public class PenghitungKataFrame extends javax.swing.JFrame {
             }
         });
 
+        labelKarakterTotalNonSpasi.setText("Jumlah Karakter");
+
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        jLabel1.setText("Aplikasi Penghitung Kata");
+
+        labelParagraf.setText("Jumlah Paragraf");
+
+        textFieldCari.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                textFieldCariActionPerformed(evt);
+            }
+        });
+
+        jLabel2.setText("Pencarian Kata : ");
+
+        btnCari.setText("Cari");
+        btnCari.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCariActionPerformed(evt);
+            }
+        });
+
+        btnSimpan.setText("Simpan");
+        btnSimpan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSimpanActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 198, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(177, 177, 177))
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(45, 45, 45)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnHitung)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(labelKarakter, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(labelKata, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(labelKalimat, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 318, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(37, Short.MAX_VALUE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(69, 69, 69)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(labelKata, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(labelKalimat, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(labelKarakterTotalNonSpasi, javax.swing.GroupLayout.PREFERRED_SIZE, 235, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(labelParagraf, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 235, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(btnCari)
+                                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(textFieldCari, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(jLabel2))))))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(149, 149, 149)
+                        .addComponent(btnHitung)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnSimpan)))
+                .addContainerGap(77, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(33, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnHitung)
-                .addGap(15, 15, 15)
+                .addContainerGap(53, Short.MAX_VALUE)
+                .addComponent(jLabel1)
+                .addGap(29, 29, 29)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(textFieldCari, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnCari))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(12, 12, 12)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnHitung)
+                    .addComponent(btnSimpan))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(labelKata)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(labelKarakter)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(labelKarakterTotalNonSpasi)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(labelKalimat)
-                .addGap(18, 18, 18))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(labelParagraf)
+                .addGap(57, 57, 57))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -138,25 +194,20 @@ public class PenghitungKataFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnHitungActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHitungActionPerformed
-        String teks = textArea.getText();
-        
-        // Hitung jumlah kata
-        String[] kata = teks.trim().split("\\s+");
-        int jumlahKata = teks.isEmpty() ? 0 : kata.length;
-
-        // Hitung jumlah karakter
-        int jumlahKarakter = teks.length();
-
-        // Hitung jumlah kalimat
-        String[] kalimat = teks.split("[.!?]");
-        int jumlahKalimat = teks.isEmpty() ? 0 : kalimat.length;
-
-        // Tampilkan hasil
-        labelKata.setText("Jumlah Kata: " + jumlahKata);
-        labelKarakter.setText("Jumlah Karakter: " + jumlahKarakter);
-        labelKalimat.setText("Jumlah Kalimat: " + jumlahKalimat);
-
+        updateHasil();
     }//GEN-LAST:event_btnHitungActionPerformed
+
+    private void textFieldCariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_textFieldCariActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_textFieldCariActionPerformed
+
+    private void btnCariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCariActionPerformed
+        btnCariActionPerformed();
+    }//GEN-LAST:event_btnCariActionPerformed
+
+    private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
+        btnSimpanActionPerformed();
+    }//GEN-LAST:event_btnSimpanActionPerformed
 
     /**
      * @param args the command line arguments
@@ -185,6 +236,7 @@ public class PenghitungKataFrame extends javax.swing.JFrame {
         }
         //</editor-fold>
 
+        
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -194,12 +246,126 @@ public class PenghitungKataFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCari;
     private javax.swing.JButton btnHitung;
+    private javax.swing.JButton btnSimpan;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea jTextArea1;
     private javax.swing.JLabel labelKalimat;
-    private javax.swing.JLabel labelKarakter;
+    private javax.swing.JLabel labelKarakterTotalNonSpasi;
     private javax.swing.JLabel labelKata;
+    private javax.swing.JLabel labelParagraf;
+    private javax.swing.JTextArea textArea;
+    private javax.swing.JTextField textFieldCari;
     // End of variables declaration//GEN-END:variables
+
+    private void updateHasil() {
+    String teks = textArea.getText();
+
+    // Menghitung jumlah kata
+    String[] kata = teks.trim().isEmpty() ? new String[0] : teks.trim().split("\\s+");
+    int jumlahKata = kata.length;
+
+    // Menghitung jumlah karakter (total dan non-spasi)
+    int jumlahKarakterTotal = teks.length();
+    int jumlahKarakterNonSpasi = teks.replace(" ", "").length();
+
+    // Menghitung jumlah kalimat
+    String[] kalimat = teks.trim().isEmpty() ? new String[0] : teks.split("[.!?]+");
+    int jumlahKalimat = kalimat.length;
+
+    // Menghitung jumlah paragraf
+    String[] paragraf = teks.split("\n+"); // Menggunakan \n untuk memisahkan paragraf
+    int jumlahParagraf = paragraf.length;
+
+    // Tampilkan hasil pada label
+    labelKata.setText("Jumlah Kata: " + jumlahKata);
+    
+    // Gabungkan jumlah karakter total dan non-spasi dalam satu label
+    labelKarakterTotalNonSpasi.setText("Jumlah Karakter (Total): " + jumlahKarakterTotal + " | (Non-Spasi): " + jumlahKarakterNonSpasi);
+    
+    labelKalimat.setText("Jumlah Kalimat: " + jumlahKalimat);
+    
+    // Menampilkan jumlah paragraf
+    labelParagraf.setText("Jumlah Paragraf: " + jumlahParagraf);  // Asumsikan Anda menambahkan labelParagraf
+    }
+
+    private void btnCariActionPerformed() {
+      String teks = textArea.getText(); // Ambil teks dari JTextArea
+    String kataCari = textFieldCari.getText().trim(); // Ambil kata dari JTextField dan hilangkan spasi ekstra
+
+    // Pastikan kata yang dicari tidak kosong
+    if (!kataCari.isEmpty()) {
+        // Debugging: Cetak teks dan kata yang dicari
+        System.out.println("Teks: " + teks);
+        System.out.println("Kata Cari: " + kataCari);
+
+        // Panggil fungsi hitungKata untuk mencari kata
+        int jumlahDitemukan = hitungKata(teks, kataCari); 
+
+        // Tampilkan hasil pencarian
+        if (jumlahDitemukan > 0) {
+            JOptionPane.showMessageDialog(this, "Kata '" + kataCari + "' ditemukan " + jumlahDitemukan + " kali.");
+        } else {
+            JOptionPane.showMessageDialog(this, "Kata '" + kataCari + "' tidak ditemukan.");
+        }
+    } else {
+        JOptionPane.showMessageDialog(this, "Masukkan kata yang ingin dicari.");
+    }
+    }
+
+    private int hitungKata(String teks, String kataCari) {
+      int count = 0;
+    int index = 0;
+
+    // Pastikan kata yang dicari tidak kosong
+    if (kataCari != null && !kataCari.isEmpty()) {
+        // Menggunakan toLowerCase() untuk mengabaikan kapitalisasi
+        teks = teks.toLowerCase();
+        kataCari = kataCari.toLowerCase();
+
+        // Debugging: Cek teks setelah mengubah ke lowercase
+        System.out.println("Teks (lowercase): " + teks);
+        System.out.println("Kata Cari (lowercase): " + kataCari);
+
+        // Loop untuk menemukan semua kemunculan kata
+        while ((index = teks.indexOf(kataCari, index)) != -1) {
+            count++;   // Tambah hitungan setiap kali ditemukan
+            index += kataCari.length();  // Pindah ke indeks setelah kata yang ditemukan
+        }
+    }
+    return count;
+}
+
+    private void btnSimpanActionPerformed() {
+        // Ambil teks dari JTextArea
+        String teks = textArea.getText();
+
+        // Ambil hasil perhitungan
+        String hasil = "Jumlah Kata: " + labelKata.getText() + "\n" +
+                       "Jumlah Karakter (Total): " + labelKarakterTotalNonSpasi.getText() + "\n" +
+                       "Jumlah Kalimat: " + labelKalimat.getText() + "\n" +
+                       "Jumlah Paragraf: " + labelParagraf.getText();
+
+        // Gabungkan teks dan hasil perhitungan
+        String contentToSave = teks + "\n\n" + hasil;
+
+        // Buka dialog untuk memilih lokasi file
+        JFileChooser fileChooser = new JFileChooser();
+        int option = fileChooser.showSaveDialog(this);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            try {
+                // Simpan file
+                BufferedWriter writer = new BufferedWriter(new FileWriter(fileToSave));
+                writer.write(contentToSave);  // Menulis konten ke file
+                writer.close();
+                JOptionPane.showMessageDialog(this, "Teks dan hasil perhitungan telah disimpan.");
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Terjadi kesalahan saat menyimpan file: " + e.getMessage());
+            }
+        }
+    }
 }
